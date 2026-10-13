@@ -1,0 +1,12 @@
+{
+  "name": "spinkelas",
+  "version": "1.0.0",
+  "description": "Spinkelas - Aplikasi Undian Lucky Wheel Mobile",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["spin", "lucky-wheel", "lottery", "spinkelas"],
+  "author": "kheireditzz",
+  "license": "MIT"
+}

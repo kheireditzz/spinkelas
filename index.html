@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Spin</title>
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- INTRO SPLASH SCREEN ANIMASI AWAL -->
+  <div class="app-splash-screen" id="appSplashScreen">
+    <div class="splash-content">
+      <div class="splash-wheel-glow"></div>
+      <div class="splash-logo-container">
+        <div class="splash-spinner-ring"></div>
+        <div class="splash-icon-center">🎡</div>
+      </div>
+      <h1 class="splash-title">SPIN</h1>
+      <p class="splash-sub">Undian Kelas</p>
+      <div class="splash-loader-bar">
+        <div class="splash-loader-progress"></div>
+      </div>
+      <span class="splash-status-text">Memuat Sistem Undian...</span>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Canvas Confetti Overlay -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <div class="app-wrapper">
+    <!-- HEADER MOBILE -->
+    <header class="app-header animate-in-header">
+      <div class="header-top-row">
+        <div class="header-brand">
+          <div class="logo-box">
+            <img src="assets/icon.png" alt="Spin" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'%232563EB\'><circle cx=\'12\' cy=\'12\' r=\'10\'/><path fill=\'%23fff\' d=\'M12 6l3 6-3 6-3-6z\'/></svg>'">
+          </div>
+          <div>
+            <div class="brand-title">Spinkelas</div>
+            <div class="brand-sub">Undian Kelas</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnSoundToggle" class="btn-icon" title="Toggle Suara">
+            <span id="soundIcon">🔊</span>
+          </button>
+          <button id="btnFullscreen" class="btn-icon" title="Layar Penuh">
+            <span>⛶</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- WAKTU & TANGGAL REALTIME MOBILE -->
+      <div class="header-datetime-bar">
+        <div class="clock-display" id="liveClock">00:00:00 <span class="tz">WIB</span></div>
+        <div class="date-display" id="liveDate">Memuat Tanggal...</div>
+      </div>
+    </header>
+
+    <!-- STATUS CARD -->
+    <div class="status-summary-bar animate-in-summary">
+      <div class="status-col">
+        <span class="lbl">Peserta</span>
+        <span class="val val-cyan" id="statActiveCount">29/29</span>
+      </div>
+      <div class="status-col">
+        <span class="lbl">Putaran</span>
+        <span class="val val-blue" id="statTotalSpins">0</span>
+      </div>
+      <div class="status-col">
+        <span class="lbl">Pemenang</span>
+        <span class="val val-gold text-truncate" id="statLastWinner">-</span>
+      </div>
+    </div>
+
+    <!-- MAIN WHEEL CONTAINER (PAS DI LAYAR MOBILE) -->
+    <section class="wheel-box animate-in-wheel">
+      <div class="wheel-outer-wrapper">
+        <!-- TOP POINTER -->
+        <div class="wheel-pointer" id="wheelPointer">
+          <svg viewBox="0 0 40 46" width="34" height="40">
+            <defs>
+              <linearGradient id="pointerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#EF4444"/>
+                <stop offset="100%" stop-color="#991B1B"/>
+              </linearGradient>
+            </defs>
+            <polygon points="20,44 4,6 36,6" fill="url(#pointerGrad)" stroke="#FFFFFF" stroke-width="2.5"/>
+            <circle cx="20" cy="12" r="4.5" fill="#FFFFFF"/>
+          </svg>
+        </div>
+
+        <!-- CANVAS WHEEL -->
+        <div class="wheel-canvas-container" id="wheelCanvasContainer">
+          <canvas id="wheelCanvas" width="700" height="700"></canvas>
+          
+          <!-- CENTER SPIN BUTTON -->
+          <button class="wheel-center-button" id="btnCenterSpin" title="Putar Roda">
+            <div class="center-ring">
+              <span class="spin-text">SPIN</span>
+              <span class="spin-sub">PUTAR</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- TOMBOL PUTAR UTAMA (TANPA EMOJI PETIR) -->
+      <button id="btnMainSpin" class="btn-spin-glow">
+        <span class="btn-spin-label">PUTAR RODA SEKARANG</span>
+      </button>
+
+      <!-- PENGATURAN PUTARAN MOBILE -->
+      <div class="spin-settings-compact">
+        <div class="setting-item">
+          <label for="spinDurationSelect">Durasi:</label>
+          <select id="spinDurationSelect" class="form-select-sm">
+            <option value="3000">3 Detik</option>
+            <option value="5000" selected>5 Detik</option>
+            <option value="8000">8 Detik</option>
+          </select>
+        </div>
+
+        <div class="setting-item switch-wrap">
+          <label class="switch-container">
+            <input type="checkbox" id="checkAutoEliminate">
+            <span class="switch-slider"></span>
+            <span class="switch-label">Eliminasi Otomatis</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL TABS (RIWAYAT & PESERTA) -->
+    <section class="panel-section animate-in-panel">
+      <div class="tabs-header">
+        <button class="tab-btn active" data-tab="tabRiwayat">
+          <span>Riwayat</span>
+          <span class="tab-badge" id="badgeRiwayatCount">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tabPeserta">
+          <span>Peserta</span>
+          <span class="tab-badge" id="badgePesertaCount">29</span>
+        </button>
+        <button class="tab-btn" data-tab="tabInfo">
+          <span>Info</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: RIWAYAT -->
+      <div class="tab-content active" id="tabRiwayat">
+        <div class="panel-toolbar-mobile">
+          <input type="text" id="searchRiwayat" class="search-input-mobile" placeholder="Cari pemenang...">
+          <div class="btn-group-mobile">
+            <button id="btnCopyHistory" class="btn-xs btn-secondary" title="Salin">Salin</button>
+            <button id="btnExportTxt" class="btn-xs btn-secondary" title="Download TXT">TXT</button>
+            <button id="btnExportCsv" class="btn-xs btn-secondary" title="Download CSV">CSV</button>
+            <button id="btnClearHistory" class="btn-xs btn-danger" title="Hapus">Hapus</button>
+          </div>
+        </div>
+
+        <div class="history-list-wrapper">
+          <div class="history-empty" id="historyEmpty">
+            <div class="empty-icon">🎡</div>
+            <div class="empty-text">Belum ada riwayat</div>
+            <div class="empty-sub">Tekan <strong>"PUTAR RODA SEKARANG"</strong> untuk mulai!</div>
+          </div>
+          <div class="history-list" id="historyList">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: DAFTAR PESERTA (BERSIH TANPA KETERANGAN) -->
+      <div class="tab-content" id="tabPeserta">
+        <div class="panel-toolbar-mobile">
+          <input type="text" id="searchPeserta" class="search-input-mobile" placeholder="Cari nama peserta...">
+          <div class="btn-group-mobile">
+            <button id="btnSelectAll" class="btn-xs btn-secondary">Semua</button>
+            <button id="btnUnselectAll" class="btn-xs btn-secondary">Batal</button>
+            <button id="btnOpenAddModal" class="btn-xs btn-primary">+ Tambah</button>
+            <button id="btnResetDefault" class="btn-xs btn-warning" title="Reset ke 29 Nama">Reset 29</button>
+          </div>
+        </div>
+
+        <div class="peserta-list-wrapper">
+          <div class="peserta-table-header">
+            <span class="col-check">Pilih</span>
+            <span class="col-num">No</span>
+            <span class="col-name">Nama Peserta</span>
+            <span class="col-action">Aksi</span>
+          </div>
+          <div class="peserta-list" id="pesertaList">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: INFO -->
+      <div class="tab-content" id="tabInfo">
+        <div class="info-card">
+          <div class="info-title">Spinkelas · Undian Kelas</div>
+          <p class="info-text">
+            Sistem undian acak transparan menggunakan algoritma deselerasi presisi dan <code>crypto.getRandomValues</code>.
+          </p>
+          <div class="info-meta">
+            <div>• <strong>Total Peserta Awal:</strong> 29 Nama</div>
+            <div>• <strong>Akurasi Jarum:</strong> Presisi 100% pada segmen nama</div>
+            <div>• <strong>Format Waktu:</strong> Realtime WIB & Tersinkronisasi</div>
+            <div>• <strong>Penyimpanan:</strong> Tersimpan otomatis di perangkat</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER MOBILE -->
+    <footer class="app-footer">
+      <span>Spinkelas &copy; 2026 · Undian Kelas</span>
+    </footer>
+  </div>
+
+  <!-- WINNER CELEBRATION MODAL (TANPA EMOJI PETIR, TANPA KETERANGAN) -->
+  <div class="modal-overlay" id="winnerModalOverlay">
+    <div class="winner-modal-card">
+      <div class="winner-header-badge">HASIL PUTARAN <span id="winRoundNum">#1</span></div>
+      
+      <div class="winner-trophy-box">
+        <div class="trophy-rays"></div>
+        <div class="trophy-icon">🏆</div>
+      </div>
+
+      <div class="winner-label">SELAMAT KEPADA:</div>
+      <h2 class="winner-name" id="winParticipantName">M Rizki</h2>
+
+      <div class="winner-meta-info">
+        <div class="meta-row">
+          <span class="meta-title">Tanggal:</span>
+          <span class="meta-data" id="winDate">13 Oktober 2026</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-title">Waktu:</span>
+          <span class="meta-data text-mono" id="winTime">19:40:15 WIB</span>
+        </div>
+      </div>
+
+      <div class="winner-actions">
+        <button id="btnSpinAgainFromModal" class="btn-modal btn-modal-primary">
+          Putar Lagi
+        </button>
+        <button id="btnCloseWinnerModal" class="btn-modal btn-modal-close">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD / EDIT PARTICIPANT MODAL (BERSIH HANYA NAMA) -->
+  <div class="modal-overlay" id="pesertaModalOverlay">
+    <div class="peserta-modal-card">
+      <div class="modal-header">
+        <h3 id="pesertaModalTitle">Tambah Peserta</h3>
+        <button class="btn-close-modal" id="btnClosePesertaModal">×</button>
+      </div>
+      <form id="pesertaForm">
+        <input type="hidden" id="editPesertaId" value="">
+        <div class="form-group">
+          <label for="inputPesertaName">Nama Peserta:</label>
+          <input type="text" id="inputPesertaName" required placeholder="Contoh: M Rizki" class="form-input">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-xs btn-secondary" id="btnCancelPeserta">Batal</button>
+          <button type="submit" class="btn-xs btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRMATION MODAL BERDESAIN ELEGAN -->
+  <div class="modal-overlay" id="confirmModalOverlay">
+    <div class="confirm-modal-card">
+      <div class="confirm-icon-box" id="confirmIconBox">
+        <span id="confirmIcon">⚠️</span>
+      </div>
+      <h3 class="confirm-title" id="confirmTitle">Konfirmasi</h3>
+      <p class="confirm-message" id="confirmMessage">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+      <div class="confirm-actions" id="confirmActions">
+        <button type="button" class="btn-confirm-cancel" id="btnConfirmCancel">Batal</button>
+        <button type="button" class="btn-confirm-ok" id="btnConfirmOk">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT -->
+  <script src="js/app.js"></script>
+</body>
+</html>
