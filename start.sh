@@ -11,7 +11,7 @@ echo "  MEMULAI SPINKELAS · LUCKY WHEEL..."
 echo "=========================================================="
 
 if command -v node >/dev/null 2>&1; then
-  node server.js
+  node local-server.js
 elif command -v python3 >/dev/null 2>&1; then
   echo "Node.js tidak ditemukan, menggunakan Python HTTP Server..."
   python3 -m http.server 3300
